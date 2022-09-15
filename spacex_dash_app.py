@@ -51,14 +51,21 @@ app.layout = html.Div(children=[html.H1('SpaceX Launch Records Dashboard',
 def succes_pie_chart(site):
     if site=='ALL':
         fig = px.pie(spacex_df, values='class', names='Launch Site', 
-        title='Success of all launch sites')
-        return fig
+        title='Successful launches of all launch sites')
     else:
         site_success = spacex_df[spacex_df['Launch Site']==site]
         fig = px.pie(site_success, names='class', color='class',
         color_discrete_map={1:'red', 0:'blue'},
-        title=f'Success for {site} launch site')
-        return fig
+        title=f'Successful launches for {site} launch site',
+        labels={1:'Success', 0:'Failure'})
+        fig.for_each_trace(lambda t: t.update( 
+        labels=[{1:'Success', 0:'Failure'}[label] for label in t.labels]))
+
+    fig.update_layout(legend=dict(yanchor="top", y=0.9,
+                          xanchor="left", x=0.6),
+                      title=dict(yanchor='top', y=0.9,
+                          xanchor='left', x=0.4))
+    return fig
 
 # TASK 4:
 # Add a callback function for `site-dropdown` and `payload-slider` as inputs, `success-payload-scatter-chart` as output
@@ -71,17 +78,20 @@ def success_scatter(site, payload_range):
     payload_range[1] = payload_range[1]+100
     if site=='ALL':
         fig = px.scatter(spacex_df, x='Payload Mass (kg)', y='class', 
-        color='Booster Version Category', opacity=0.5,
+        color='Booster Version Category',
         title='Payload vs success for all sites')
-        fig['layout'].update(xaxis=dict(range=payload_range))
-        return fig
     else:
         site_df = spacex_df[spacex_df['Launch Site']==site]
         fig = px.scatter(site_df, x='Payload Mass (kg)', y='class',
-        color='Booster Version Category', opacity=0.5,
+        color='Booster Version Category',
         title=f'Payload vs success for {site} launch site')
-        fig['layout'].update(xaxis=dict(range=payload_range))
-        return fig
+
+    fig['layout'].update(xaxis=dict(range=payload_range))
+    fig.update_layout(legend=dict(yanchor="top", y=0.8,
+                          xanchor="left", x=0.01),
+                      title=dict(yanchor='top', y=0.9,
+                          xanchor='left', x=0.4))
+    return fig
 # Run the app
 if __name__ == '__main__':
     app.run_server()
